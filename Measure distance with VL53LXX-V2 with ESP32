@@ -1,0 +1,75 @@
+#include <Wire.h>
+#include "Adafruit_VL53L0X.h"
+
+Adafruit_VL53L0X lox = Adafruit_VL53L0X();
+
+const int R1 = 18;
+const int R2 = 19;
+const int L1 = 26;
+const int L2 = 27;
+
+void setup() {
+  pinMode(R1,   OUTPUT);
+  pinMode(R2, OUTPUT);
+  pinMode(L1,   OUTPUT);
+  pinMode(L2, OUTPUT); 
+
+ digitalWrite(R1, LOW);
+ digitalWrite(R2, LOW);
+ digitalWrite(L1, LOW);
+ digitalWrite(L2, LOW);
+  Serial.begin(115200);
+
+  // wait until serial port opens for native USB devices
+  while (! Serial) {
+    delay(1);
+  }
+  
+  Serial.println("Adafruit VL53L0X test");
+  if (!lox.begin()) {
+    Serial.println(F("Failed to boot VL53L0X"));
+    while(1);
+  }
+  // power 
+  Serial.println(F("VL53L0X API Simple Ranging example\n\n")); 
+}
+
+
+void loop() {
+  VL53L0X_RangingMeasurementData_t measure;
+    
+  Serial.print("Reading a measurement... ");
+  lox.rangingTest(&measure, false); // pass in 'true' to get debug data printout!
+
+  if (measure.RangeStatus != 4) {  // phase failures have incorrect data
+    Serial.print("Distance (mm): "); Serial.println(measure.RangeMilliMeter);
+  ///***Use the reading to control***
+
+int media = measure.RangeMilliMeter;
+
+         if (media < 180) {
+           digitalWrite(R1, LOW);
+           digitalWrite(R2, LOW);
+           digitalWrite(L1, LOW);
+           digitalWrite(L2, LOW);
+           delay(1000);
+           
+
+         }
+
+        else{
+          digitalWrite(R1, LOW);
+           digitalWrite(R2, HIGH);
+           digitalWrite(L1, HIGH);
+           digitalWrite(L2, LOW);
+           delay(100);
+        }
+  ///***use the reading to control***
+  
+  
+  } else {
+    Serial.println(" out of range ");
+  }
+    
+  delay(100);
+}
