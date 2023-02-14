@@ -1,0 +1,89 @@
+// Basic demo for accelerometer readings from Adafruit MPU6050
+
+#include <Adafruit_MPU6050.h>
+#include <Adafruit_Sensor.h>
+#include <Wire.h>
+#define BLYNK_TEMPLATE_ID "TMPLdovhQp0k"
+#define BLYNK_TEMPLATE_NAME "MPU with esp32"
+#define BLYNK_AUTH_TOKEN "t7g-wU7xRg_VxpxtyJMFLHmDtObEF0nU"
+#define BLYNK_PRINT Serial 
+#include <WiFi.h>
+#include <BlynkSimpleEsp32.h>
+BlynkTimer timer;
+char auth[] = "t7g-wU7xRg_VxpxtyJMFLHmDtObEF0nU";
+
+char ssid[] = "Shajeed";
+char pass[] = "123456789";
+
+
+Adafruit_MPU6050 mpu;
+
+void setup(void) {
+  Serial.begin(115200);
+  while (!Serial) {
+    delay(10); // will pause Zero, Leonardo, etc until serial console opens
+  }
+
+  // Try to initialize!
+  if (!mpu.begin()) {
+    Serial.println("Failed to find MPU6050 chip");
+    while (1) {
+      delay(10);
+    }
+  }
+  Serial.println("MPU6050 Found!");
+
+  mpu.setAccelerometerRange(MPU6050_RANGE_16_G);
+  mpu.setGyroRange(MPU6050_RANGE_250_DEG);
+  mpu.setFilterBandwidth(MPU6050_BAND_21_HZ);
+  Serial.println("");
+  delay(100);
+
+Blynk.begin(auth, ssid, pass);
+timer.setInterval(100L, sendsensor); 
+  Serial.println("");
+  delay(100);
+  }
+void sendsensor() {
+   sensors_event_t a, g, temp;
+  mpu.getEvent(&a, &g, &temp);
+   int accelerationx=a.acceleration.x;
+   int accelerationy=a.acceleration.y;
+   int accelerationz=a.acceleration.z;
+   int rotationx=g.gyro.x;
+   int rotationy=g.gyro.y;
+   int rotationz=g.gyro.z;
+
+  /* Print out the values */
+  Serial.print("AccelX:");
+  Serial.print(a.acceleration.x);
+  Serial.print(",");
+  Serial.print("AccelY:");
+  Serial.print(a.acceleration.y);
+  Serial.print(",");
+  Serial.print("AccelZ:");
+  Serial.print(a.acceleration.z);
+  Serial.print(", ");
+  Serial.print("GyroX:");
+  Serial.print(g.gyro.x);
+  Serial.print(",");
+  Serial.print("GyroY:");
+  Serial.print(g.gyro.y);
+  Serial.print(",");
+  Serial.print("GyroZ:");
+  Serial.print(g.gyro.z);
+
+     Blynk.virtualWrite(V0, accelerationx);
+    Blynk.virtualWrite(V1, rotationx);
+    Blynk.virtualWrite(V2, rotationz);
+    Blynk.virtualWrite(V4, accelerationy);
+    Blynk.virtualWrite(V5, rotationy);
+    Blynk.virtualWrite(V6, accelerationz);
+  Serial.println("");
+  delay(10);
+}
+void loop ()
+{
+  Blynk.run();
+  timer.run();
+  }
